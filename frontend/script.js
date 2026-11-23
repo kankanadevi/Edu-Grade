@@ -9,7 +9,7 @@ function getDefaultApiBase() {
   const isLocal = window.location.hostname === "localhost" || 
                   window.location.hostname === "127.0.0.1" || 
                   window.location.protocol === "file:";
-  return isLocal ? "http://127.0.0.1:8000" : "";
+  return isLocal ? "http://127.0.0.1:8000" : "https://edu-grade-ogf5.onrender.com";
 }
 
 let apiBase = localStorage.getItem(API_URL_KEY) || getDefaultApiBase();
