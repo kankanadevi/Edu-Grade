@@ -1,0 +1,15 @@
+Feature Name,Data Type
+studytime,int64
+absences,int64
+failures,int64
+age,int64
+schoolsup,int64
+famsup,int64
+paid,int64
+activities,int64
+internet,int64
+higher,int64
+Medu,int64
+Fedu,int64
+First_Term,int64
+Second_Term,int64
