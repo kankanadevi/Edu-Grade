@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduGrade</title>
+  <title>EduGrade | Student Performance & At-Risk Intervention</title>
   <script>
     if (!sessionStorage.getItem("edugrade_auth") || !sessionStorage.getItem("edugrade_subject")) {
       location.replace("login.html");
@@ -13,6 +13,7 @@
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
+  <!-- SVG Icons -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></symbol>
@@ -26,126 +27,238 @@
       <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
       <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
       <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
     </defs>
   </svg>
 
+  <!-- Top Navigation Header -->
   <header class="topbar">
     <div class="brand">
       <span class="brand-icon"><svg class="ic"><use href="#i-cap"/></svg></span>
-      <span class="brand-name">EduGrade</span>
+      <div>
+        <span class="brand-name">EduGrade</span>
+        <span class="brand-tag">Group L</span>
+      </div>
     </div>
     <div class="userbar">
-      <span class="chip"><svg class="ic"><use href="#i-user"/></svg><span id="teacherName">Teacher</span></span>
-      <button id="logoutBtn" class="btn btn-ghost btn-sm"><svg class="ic"><use href="#i-logout"/></svg>Logout</button>
+      <!-- API Connection Status Badge & Settings Trigger -->
+      <button id="apiStatusBtn" class="chip chip-clickable" title="Click to configure backend API URL">
+        <span id="apiStatusDot" class="status-dot checking"></span>
+        <span id="apiStatusText">Checking API...</span>
+        <svg class="ic" style="width:14px;height:14px;"><use href="#i-settings"/></svg>
+      </button>
+
+      <!-- ML Model Info Modal Trigger -->
+      <button id="openModelModalBtn" class="chip chip-clickable" title="View Model Comparison & Evaluation">
+        <svg class="ic"><use href="#i-chart"/></svg>
+        <span>Model Evaluation</span>
+      </button>
+
+      <!-- Current Teacher Info -->
+      <span class="chip">
+        <svg class="ic"><use href="#i-user"/></svg>
+        <span id="teacherName">Teacher</span>
+      </span>
+
+      <!-- Logout -->
+      <button id="logoutBtn" class="btn btn-ghost btn-sm" title="Sign out">
+        <svg class="ic"><use href="#i-logout"/></svg>
+        Logout
+      </button>
     </div>
   </header>
 
+  <!-- Main Container -->
   <div class="container">
 
     <div class="page-head">
-      <h1>Dashboard</h1>
-      <p id="heroSub">Student Academic Performance &amp; At-Risk Intervention System</p>
+      <div>
+        <h1>Dashboard</h1>
+        <p id="heroSub">Student Academic Performance &amp; At-Risk Intervention System</p>
+      </div>
+      <div>
+        <span class="pill pill-grade" id="activeSubjectBadge">Mathematics Subject</span>
+      </div>
     </div>
 
+    <!-- Overview Metrics Cards -->
     <section class="metrics">
       <div class="metric">
-        <div class="metric-top"><span>Total Students</span><svg class="ic"><use href="#i-users"/></svg></div>
+        <div class="metric-top">
+          <span>Total Students</span>
+          <svg class="ic"><use href="#i-users"/></svg>
+        </div>
         <h2 id="totalStudents">0</h2>
+        <div class="metric-sub">In current subject cohort</div>
       </div>
+
       <div class="metric">
-        <div class="metric-top"><span>Predicted Grade</span><svg class="ic"><use href="#i-target"/></svg></div>
+        <div class="metric-top">
+          <span>Predicted Grade Band</span>
+          <svg class="ic"><use href="#i-target"/></svg>
+        </div>
         <h2 id="metricGrade">Awaiting</h2>
+        <div class="metric-sub">0-9 Low | 10-13 Avg | 14-16 Good | 17-20 Exc</div>
       </div>
+
       <div class="metric">
-        <div class="metric-top"><span>Academic Risk</span><svg class="ic"><use href="#i-alert"/></svg></div>
+        <div class="metric-top">
+          <span>Academic Risk Level</span>
+          <svg class="ic"><use href="#i-alert"/></svg>
+        </div>
         <h2 id="metricRisk">Awaiting</h2>
+        <div class="metric-sub" id="metricRiskSub">Decision-support signal</div>
+      </div>
+
+      <div class="metric">
+        <div class="metric-top">
+          <span>Serving Model</span>
+          <svg class="ic"><use href="#i-bolt"/></svg>
+        </div>
+        <h2 id="metricEngine" style="font-size:20px;margin-top:4px;">Linear SVC</h2>
+        <div class="metric-sub" id="metricEngineSub">FastAPI Microservice</div>
       </div>
     </section>
 
+    <!-- Toolbar: Actions & Student Selector -->
     <div class="toolbar">
       <button id="addBtn" class="btn"><svg class="ic"><use href="#i-plus"/></svg>Add Student</button>
+      
       <select id="studentSelect" class="select-student">
-        <option value="">Select a student</option>
+        <option value="">Select a student...</option>
       </select>
-      <button id="predictBtn" class="btn"><svg class="ic"><use href="#i-target"/></svg>Predict</button>
+
+      <button id="predictBtn" class="btn"><svg class="ic"><use href="#i-target"/></svg>Run Prediction</button>
       <button id="editBtn" class="btn btn-ghost"><svg class="ic"><use href="#i-edit"/></svg>Edit</button>
       <button id="deleteBtn" class="btn btn-ghost btn-danger"><svg class="ic"><use href="#i-trash"/></svg>Delete</button>
+
+      <div style="flex:1;"></div>
+
+      <button id="loadSamplesBtn" class="btn btn-secondary btn-sm" title="Populate cohort with curated UCI Mathematics student records">
+        <svg class="ic"><use href="#i-bolt"/></svg>Load Sample Students
+      </button>
     </div>
 
-    <h3 class="section-title">Student Performance</h3>
+    <!-- Student Performance & Factor Comparison Section -->
+    <h3 class="section-title">
+      <span>Student Performance &amp; Factor Comparison</span>
+      <span class="muted" style="font-size:13px; font-weight:normal;">PRD FR-09 Requirement</span>
+    </h3>
     <div class="panel">
-      <div id="chartMsg" class="muted">Select a student from the dropdown above to see their performance.</div>
+      <div id="chartMsg" class="muted" style="text-align:center; padding:30px 0;">
+        <svg class="ic" style="width:36px; height:36px; margin-bottom:8px; opacity:0.6;"><use href="#i-users"/></svg>
+        <p>Select a student from the dropdown above or click <b>"Load Sample Students"</b> to view academic indicators and performance charts.</p>
+      </div>
+
       <div id="perfBox" class="hidden">
         <div class="perf-head">
           <div>
-            <div id="perfName" class="perf-name"></div>
-            <div id="perfId" class="muted"></div>
+            <div id="perfName" class="perf-name">Student Name</div>
+            <div id="perfId" class="muted">Student ID: ---</div>
           </div>
-          <div id="perfTrend" class="trend"></div>
+          <div id="perfTrend" class="trend">Trend</div>
         </div>
+
+        <!-- 4 Key Stat Badges -->
         <div id="statRow" class="stat-row"></div>
-        <div id="chart"></div>
+
+        <!-- 2 Visual Charts: Grade Trajectory & Factor Analysis -->
+        <div class="charts-grid">
+          <div class="chart-box">
+            <div class="chart-title">Term Grade Trajectory &amp; Reference Bands</div>
+            <div id="chartGrades"></div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">Academic &amp; Behavioral Risk Factors vs Benchmarks</div>
+            <div id="chartFactors"></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <h3 class="section-title">Recent Prediction</h3>
+    <!-- Recent Prediction & Teacher Recommendation Section -->
+    <h3 class="section-title">
+      <span>Prediction Outcome &amp; Educator Action Plan</span>
+      <span class="muted" style="font-size:13px; font-weight:normal;">PRD FR-08 Requirement</span>
+    </h3>
     <div class="panel" id="recent">
-      <span class="muted">Select a student and click Predict.</span>
+      <span class="muted">Select a student and click <b>Run Prediction</b> to evaluate academic risk and projected grade band.</span>
     </div>
 
-    <h3 class="section-title">How Risk Is Decided</h3>
+    <!-- How Risk Is Decided (Explainable Rule Framework) -->
+    <h3 class="section-title">
+      <span>Explainable Risk Evaluation Framework</span>
+      <span class="muted" style="font-size:13px; font-weight:normal;">Documented Risk Rule</span>
+    </h3>
     <div class="panel">
-      <p class="muted">We look at the average of First_Term and Second_Term marks, past failures and absences. Rules are checked from the top: High first, then Medium, otherwise Low.</p>
+      <p class="muted" style="font-size:14px; margin-bottom:12px;">
+        EduGrade synthesizes term progression, past academic setbacks, attendance continuity, and machine learning outputs. 
+        Rules are evaluated hierarchically (High &rarr; Medium &rarr; Low):
+      </p>
+
       <div class="risk-grid">
         <div class="risk-card" id="rc-High">
-          <span class="pill pill-high">High risk</span>
-          <h4>Needs help soon</h4>
+          <span class="pill pill-high">High Risk</span>
+          <h4>Immediate Intervention Needed</h4>
           <ul>
-            <li>Average marks below 10</li>
-            <li>or 2 or more past failures</li>
+            <li>Average term marks below passing threshold (&lt; 10/20)</li>
+            <li>Two or more past course failures</li>
+            <li>Predicted final grade band is <b>Low</b> (0–9)</li>
           </ul>
         </div>
+
         <div class="risk-card" id="rc-Medium">
-          <span class="pill pill-medium">Medium risk</span>
-          <h4>Keep an eye</h4>
+          <span class="pill pill-medium">Medium Risk</span>
+          <h4>Proactive Monitoring &amp; Support</h4>
           <ul>
-            <li>Average marks below 14</li>
-            <li>or more than 15 absences</li>
+            <li>Average term marks below target threshold (&lt; 14/20)</li>
+            <li>Excessive absenteeism (&gt; 15 missed classes)</li>
+            <li>Predicted final grade band is <b>Average</b> (10–13)</li>
           </ul>
         </div>
+
         <div class="risk-card" id="rc-Low">
-          <span class="pill pill-low">Low risk</span>
-          <h4>Doing fine</h4>
+          <span class="pill pill-low">Low Risk</span>
+          <h4>Stable Academic Trajectory</h4>
           <ul>
-            <li>None of the above</li>
+            <li>Satisfies all coursework and attendance baselines</li>
+            <li>Predicted final grade band is <b>Good</b> or <b>Excellent</b></li>
+            <li>Zero or minimal risk flags</li>
           </ul>
         </div>
       </div>
-      <p class="muted note"><b>Example:</b> First_Term 8 and Second_Term 10 give an average of 9, so the risk is High. After you click Predict, the matching box lights up.</p>
-      <p class="muted note">Early-support signal only. Teacher review is required before any action.</p>
+
+      <p class="muted note"><b>Responsible Use Notice:</b> EduGrade predictions serve solely as decision-support indicators for educators and mentors. Predictions must never replace teacher judgment or be used for punitive decisions.</p>
     </div>
 
   </div>
 
+  <!-- MODAL 1: Student Information Intake Form (FR-07) -->
   <div id="modal" class="modal hidden">
     <form id="studentForm" class="modal-card">
-      <h2 id="formTitle">Student Information</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2 id="formTitle">Student Information Intake</h2>
+        <button type="button" id="closeFormX" class="btn btn-ghost btn-sm" style="border:none;"><svg class="ic"><use href="#i-x"/></svg></button>
+      </div>
 
       <div class="grid">
         <div>
-          <label>Student ID</label>
+          <label for="sid">Student ID</label>
           <input type="text" id="sid" maxlength="20" placeholder="e.g. S001" required>
         </div>
         <div>
-          <label>Student Name</label>
-          <input type="text" id="label" maxlength="40" placeholder="Enter student name" required>
+          <label for="label">Student Name</label>
+          <input type="text" id="label" maxlength="40" placeholder="e.g. Rahul Sharma" required>
         </div>
         <div>
-          <label>Age</label>
+          <label for="age">Student Age (15–22)</label>
           <input type="number" id="age" min="15" max="22" value="17" required>
         </div>
         <div>
-          <label>Study Time</label>
+          <label for="studytime">Weekly Study Time</label>
           <select id="studytime">
             <option value="1">1 - Less than 2 hours</option>
             <option value="2" selected>2 - 2 to 5 hours</option>
@@ -154,71 +267,199 @@
           </select>
         </div>
         <div>
-          <label>Past Failures</label>
+          <label for="failures">Past Course Failures (0–4)</label>
           <select id="failures">
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
+            <option value="0" selected>0 failures</option>
+            <option value="1">1 failure</option>
+            <option value="2">2 failures</option>
+            <option value="3">3 failures</option>
+            <option value="4">4 failures</option>
           </select>
         </div>
         <div>
-          <label>Absences</label>
+          <label for="absences">Absences Count (0–93)</label>
           <input type="number" id="absences" min="0" max="93" value="4" required>
         </div>
         <div>
-          <label>School Support (schoolsup)</label>
-          <select id="schoolsup"><option value="0">0</option><option value="1">1</option></select>
+          <label for="schoolsup">Extra Educational School Support</label>
+          <select id="schoolsup">
+            <option value="0" selected>No (0)</option>
+            <option value="1">Yes (1)</option>
+          </select>
         </div>
         <div>
-          <label>Family Support (famsup)</label>
-          <select id="famsup"><option value="0">0</option><option value="1">1</option></select>
+          <label for="famsup">Family Educational Support</label>
+          <select id="famsup">
+            <option value="0">No (0)</option>
+            <option value="1" selected>Yes (1)</option>
+          </select>
         </div>
         <div>
-          <label>Paid Classes (paid)</label>
-          <select id="paid"><option value="0">0</option><option value="1">1</option></select>
+          <label for="paid">Extra Paid Classes</label>
+          <select id="paid">
+            <option value="0" selected>No (0)</option>
+            <option value="1">Yes (1)</option>
+          </select>
         </div>
         <div>
-          <label>Extra Activities (activities)</label>
-          <select id="activities"><option value="0">0</option><option value="1">1</option></select>
+          <label for="activities">Extra-Curricular Activities</label>
+          <select id="activities">
+            <option value="0" selected>No (0)</option>
+            <option value="1">Yes (1)</option>
+          </select>
         </div>
         <div>
-          <label>Internet Access (internet)</label>
-          <select id="internet"><option value="0">0</option><option value="1">1</option></select>
+          <label for="internet">Home Internet Access</label>
+          <select id="internet">
+            <option value="0">No (0)</option>
+            <option value="1" selected>Yes (1)</option>
+          </select>
         </div>
         <div>
-          <label>Higher Education Plan (higher)</label>
-          <select id="higher"><option value="0">0</option><option value="1">1</option></select>
+          <label for="higher">Plans for Higher Education</label>
+          <select id="higher">
+            <option value="0">No (0)</option>
+            <option value="1" selected>Yes (1)</option>
+          </select>
         </div>
         <div>
-          <label>Mother's Education (Medu)</label>
+          <label for="Medu">Mother's Education (0–4)</label>
           <select id="Medu">
-            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
-            <option value="3">3</option><option value="4">4</option>
+            <option value="0">0 - None</option>
+            <option value="1">1 - Primary Education (4th grade)</option>
+            <option value="2" selected>2 - 5th to 9th grade</option>
+            <option value="3">3 - Secondary Education</option>
+            <option value="4">4 - Higher Education</option>
           </select>
         </div>
         <div>
-          <label>Father's Education (Fedu)</label>
+          <label for="Fedu">Father's Education (0–4)</label>
           <select id="Fedu">
-            <option value="0">0</option><option value="1">1</option><option value="2">2</option>
-            <option value="3">3</option><option value="4">4</option>
+            <option value="0">0 - None</option>
+            <option value="1">1 - Primary Education (4th grade)</option>
+            <option value="2" selected>2 - 5th to 9th grade</option>
+            <option value="3">3 - Secondary Education</option>
+            <option value="4">4 - Higher Education</option>
           </select>
         </div>
         <div>
-          <label>First Term Grade (First_Term)</label>
-          <input type="number" id="G1" min="0" max="20" value="10" required>
+          <label for="First_Term">First Term Grade (First_Term: 0–20)</label>
+          <input type="number" id="First_Term" min="0" max="20" value="12" required>
         </div>
         <div>
-          <label>Second Term Grade (Second_Term)</label>
-          <input type="number" id="G2" min="0" max="20" value="10" required>
+          <label for="Second_Term">Second Term Grade (Second_Term: 0–20)</label>
+          <input type="number" id="Second_Term" min="0" max="20" value="12" required>
         </div>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn"><svg class="ic"><use href="#i-save"/></svg>Save Details</button>
+        <button type="submit" class="btn"><svg class="ic"><use href="#i-save"/></svg>Save Student Profile</button>
         <button type="button" id="cancelBtn" class="btn btn-ghost"><svg class="ic"><use href="#i-x"/></svg>Cancel</button>
       </div>
     </form>
+  </div>
+
+  <!-- MODAL 2: Backend API Configuration (for Render & Vercel deployment) -->
+  <div id="apiModal" class="modal hidden">
+    <div class="modal-card" style="max-width:540px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2>Backend API Settings</h2>
+        <button type="button" id="closeApiModalX" class="btn btn-ghost btn-sm" style="border:none;"><svg class="ic"><use href="#i-x"/></svg></button>
+      </div>
+
+      <p class="muted" style="font-size:13px; margin-bottom:16px;">
+        When deployed on <b>Vercel</b>, enter your <b>Render</b> service URL below. If testing locally, use <code style="color:var(--soft);">http://127.0.0.1:8000</code>.
+      </p>
+
+      <div style="margin-bottom:16px;">
+        <label for="apiUrlInput">Backend Base URL</label>
+        <input type="url" id="apiUrlInput" placeholder="https://edugrade-backend.onrender.com" required>
+      </div>
+
+      <div id="apiTestResult" style="padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px;" class="hidden"></div>
+
+      <div style="display:flex; gap:10px;">
+        <button type="button" id="testApiBtn" class="btn btn-secondary">
+          <svg class="ic"><use href="#i-bolt"/></svg>Test Connection
+        </button>
+        <button type="button" id="saveApiBtn" class="btn">
+          <svg class="ic"><use href="#i-check"/></svg>Save URL
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Model Performance & PRD Evaluation Metrics (FR-05) -->
+  <div id="modelModal" class="modal hidden">
+    <div class="modal-card" style="max-width:760px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2>Model Evaluation &amp; Comparison</h2>
+        <button type="button" id="closeModelModalX" class="btn btn-ghost btn-sm" style="border:none;"><svg class="ic"><use href="#i-x"/></svg></button>
+      </div>
+
+      <p class="muted" style="font-size:14px; margin-bottom:14px;">
+        Evaluated on held-out test split of the UCI Student Performance (Mathematics) subject dataset (79 test instances) complying with PRD Objectives O2 &amp; O3:
+      </p>
+
+      <table class="eval-table">
+        <thead>
+          <tr>
+            <th>Model Architecture</th>
+            <th>Accuracy</th>
+            <th>Macro Precision</th>
+            <th>Macro Recall</th>
+            <th>Macro F1</th>
+            <th>Low-Grade Recall</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="highlight">
+            <td><b>Linear SVC (Selected Model)</b></td>
+            <td>83.5%</td>
+            <td>80.5%</td>
+            <td>79.4%</td>
+            <td>79.4%</td>
+            <td>92.3%</td>
+          </tr>
+          <tr>
+            <td>RBF SVC</td>
+            <td>74.7%</td>
+            <td>56.4%</td>
+            <td>60.2%</td>
+            <td>57.3%</td>
+            <td>69.2%</td>
+          </tr>
+          <tr>
+            <td>Weighted KNN (k=5, distance)</td>
+            <td>54.4%</td>
+            <td>41.7%</td>
+            <td>41.6%</td>
+            <td>40.8%</td>
+            <td>50.0%</td>
+          </tr>
+          <tr>
+            <td>Baseline (Dummy Classifier)</td>
+            <td>41.8%</td>
+            <td>10.4%</td>
+            <td>25.0%</td>
+            <td>14.7%</td>
+            <td>0.0%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px; margin-top:16px;">
+        <h4 style="font-size:14px; color:var(--soft); margin-bottom:6px;">Model Selection Justification (PRD O3)</h4>
+        <p class="muted" style="font-size:13px; line-height:1.6;">
+          <b>Linear SVC</b> achieved the highest overall accuracy (83.5%) and macro precision (80.5%), while critically delivering <b>92.3% recall on the Low-grade band</b>. 
+          For an educational at-risk intervention system, high Low-grade recall is vital to minimize false negatives and ensure struggling students receive timely academic mentoring.
+        </p>
+      </div>
+
+      <div style="margin-top:20px; text-align:right;">
+        <button type="button" id="closeModelModalBtn" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
